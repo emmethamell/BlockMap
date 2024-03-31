@@ -1,7 +1,32 @@
 import express from "express";
+import dotenv from 'dotenv'
+import { MongoClient } from "mongodb";
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
+dotenv.config()
 const app = express();
 const port = 3000;
+const uri = process.env.URI;
+
+
+
+const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+
+client.connect()
+    .then(() => console.log("You successfully connected to MongoDB!"))
+    .catch(err => console.error(err));
+
+//close the client if the app is shut down
+process.on('SIGINT', () => client.close());
+process.on('SIGTERM', () => client.close());
+
+
 
 app.get('/buildings', (req, res) => {
   //example data
@@ -37,6 +62,13 @@ app.get('/room', (req, res) => {
 
     res.json({roomId: roomId})
 
+})
+
+app.get('/test', async(req, res) => {
+    const db = client.db('blockmap');
+    const collection = db.collection('buildings');
+    const documents = await collection.find({}).toArray();
+    res.json(documents);
 })
 
 app.listen(port, () => {
