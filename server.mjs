@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from 'dotenv'
-import { MongoClient } from "mongodb";
-const { MongoClient, ServerApiVersion } = require('mongodb');
+
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
 dotenv.config()
 const app = express();
@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
   });
 
 client.connect()
-    .then(() => console.log("You successfully connected to MongoDB!"))
+    .then(() => console.log("connection to mongodb successful"))
     .catch(err => console.error(err));
 
 //close the client if the app is shut down
