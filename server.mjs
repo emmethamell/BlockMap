@@ -30,6 +30,7 @@ process.on('SIGTERM', () => client.close());
 
 app.get('/buildings', (req, res) => {
   //example data
+  //TODO: retrieve and return an array of all the building objects each with hours and building code
     const blocks = {
         mon: [[0, 9000], [2100, 2400]],
         tue: [[0, 9000], [2100, 2400]],
@@ -50,7 +51,7 @@ app.post('/rooms', (req, res) => {
     //should be an array of room ids (building code and room numbers)
     const roomIds = req.body;
 
-    //get data for each room, create and return an array of blockmap objects
+    //TODO: get data for each room, create and return an array of blockmap objects
   
     res.json([{}, {}, {}]);
 });
@@ -58,7 +59,7 @@ app.post('/rooms', (req, res) => {
 app.get('/room', (req, res) => {
     const roomId = req.query.roomId;
 
-    //get data for room given id and return blockmap obj for room
+    //TODO: get data for room given id and return blockmap obj for room
 
     res.json({roomId: roomId})
 
