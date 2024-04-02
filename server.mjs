@@ -22,6 +22,7 @@ client.connect()
     .then(() => console.log("connection to mongodb successful"))
     .catch(err => console.error(err));
 
+    
 //close the client if the app is shut down
 process.on('SIGINT', () => client.close());
 process.on('SIGTERM', () => client.close());
