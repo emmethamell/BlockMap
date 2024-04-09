@@ -32,7 +32,7 @@ Example Document:
 
 //return an array of building objects for all buildings on campus
 async function getBuildings(client) {
-
+    
 }
 
 //roomIds is an array of room ids in the format {BUILDING_CODE}_{ROOM_CODE}
