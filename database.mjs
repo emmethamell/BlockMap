@@ -32,6 +32,7 @@ Example Document:
 
 //return an array of building objects for all buildings on campus
 async function getBuildings(client) {
+    
     const db = client.db('blockmap');
     const buildings = await db.collection('buildings').find({}).toArray();
     return buildings.map(x => ({buildingCode: x.buildingCode, hours: x.blocks}))
