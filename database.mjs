@@ -48,6 +48,7 @@ async function getRooms(client, roomIds) {
 async function getRoom(client, roomId) {
     const db = client.db('blockmap');
     const split = roomId.split("_")
+    
     const buildingToFind = split[0];
     const roomCode = split[1]
     const collection = db.collection('buildings')
