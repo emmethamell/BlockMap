@@ -46,13 +46,7 @@ async function getRooms(client, roomIds) {
 //roomId is in format {BUILDING_CODE}_{ROOM_CODE}
 //return blockmap obj for the room
 async function getRoom(client, roomId) {
-    const db = client.db('blockmap');
-    const split = roomId.split("_")
-    const buildingToFind = split[0];
-    const roomCode = split[1]
-    const collection = db.collection('buildings')
-    const document = await collection.find({buildingCode: buildingToFind, rooms:{$elemMatch : {roomCode: roomId}}}).toArray()
-    return {building_code: buildingToFind, room_code:roomCode, Blocks: document[0].rooms[0].blocks }
+
 }
 
 
