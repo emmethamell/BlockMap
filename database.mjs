@@ -50,7 +50,6 @@ async function getRoom(client, roomId) {
 }
 
 
-
 //for testing
 async function test(client) {
     const db = client.db('blockmap');
