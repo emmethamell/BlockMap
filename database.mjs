@@ -34,7 +34,7 @@ Example Document:
 async function getBuildings(client) {
     const db = client.db('blockmap');
     const buildings = await db.collection('buildings').find({}).toArray();
-    return buildings.map(x => ({building_code: x.building_code, hours: x.hours}))
+    return buildings.map(x => ({buildingCode: x.buildingCode, hours: x.blocks}))
 }
 
 //roomIds is an array of room ids in the format {BUILDING_CODE}_{ROOM_CODE}
@@ -46,7 +46,7 @@ async function getRooms(client, roomIds) {
 //roomId is in format {BUILDING_CODE}_{ROOM_CODE}
 //return blockmap obj for the room
 async function getRoom(client, roomId) {
-    
+
 }
 
 
