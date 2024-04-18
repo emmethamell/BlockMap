@@ -1,114 +1,192 @@
-/* Script to parse excel data and store it in the database */
-import dotenv from 'dotenv';
-import XLSX from 'xlsx';
-import { MongoClient, ServerApiVersion } from 'mongodb';
-import { convertTime } from './helpers.mjs';
+import dotenv from "dotenv";
+import XLSX from "xlsx";
+import { MongoClient, ServerApiVersion } from "mongodb";
+import { convertTime } from "./helpers.mjs";
 
-dotenv.config({ path: '../.env'});
+dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
 
-const newClient = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    }
-  });
 
-function getData() {
-    const workbook = XLSX.readFile('./Spring_2024_Class_Schedule.xlsx');
-    const sheetName = workbook.SheetNames[1];
-    const worksheet = workbook.Sheets[sheetName];
-    
-    return XLSX.utils.sheet_to_json(worksheet);
+
+function addData() {
+
+    const newClient = new MongoClient(uri, {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
+
+    function getData() {
+        const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
+        const sheetName = workbook.SheetNames[1];
+        const worksheet = workbook.Sheets[sheetName];
+      
+        return XLSX.utils.sheet_to_json(worksheet);
+      }
+      
+      /*
+      Example object in data array here:
+        {
+          Course: 'ACCOUNTG 221 01LL 10002 1243',
+          'Reference #': '2023-ACQZQV',
+          Organization: '5-ACCOUNTG',
+          'Event Start Date': 45329.37847222222, 
+          'Event End Date': 45420.413194444445, 
+          MO: '',
+          TU: '',
+          WE: 'WE',
+          TH: '',
+          FR: '',
+          SA: '',
+          SU: '',
+          'Event Start Time': 45329.37847222222,
+          'Event End Time': 45420.413194444445,
+          'Exp Head Count': 25,
+          'Reg Head Count': 22,
+          Location: 'SOM0120',
+          'Loc Max Cap': 25
+        },
+      */
+      
+      let data = getData();
+      
+      // Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
+      data = data.filter((item) => !item.Course.startsWith("EXAM"));
+      
+      const buildings = {};
+      data.forEach((item) => {
+        const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
+        const roomKey = `${buildingCode}_${roomCode}`;
+      
+        if (!buildings[buildingCode]) {
+          buildings[buildingCode] = {
+            buildingCode: buildingCode,
+            blocks: {
+              Mon: [],
+              Tue: [],
+              Wed: [],
+              Thu: [],
+              Fri: [],
+              Sat: [],
+              Sun: [],
+            },
+            rooms: [],
+          };
+        }
+      
+        if (
+          !buildings[buildingCode].rooms.find((room) => room.roomCode === roomKey)
+        ) {
+          buildings[buildingCode].rooms.push({
+            roomCode: roomKey,
+            blocks: {
+              Mon: [],
+              Tue: [],
+              Wed: [],
+              Thu: [],
+              Fri: [],
+              Sat: [],
+              Sun: [],
+            },
+          });
+        }
+      
+        const room = buildings[buildingCode].rooms.find(
+          (room) => room.roomCode === roomKey
+        );
+        if (item.MO)
+          room.blocks["Mon"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.TU)
+          room.blocks["Tue"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.WE)
+          room.blocks["Wed"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.TH)
+          room.blocks["Thu"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.FR)
+          room.blocks["Fri"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.SA)
+          room.blocks["Sat"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+        if (item.SU)
+          room.blocks["Sun"].push([
+            convertTime(item["Event Start Time"]),
+            convertTime(item["Event End Time"]),
+          ]);
+      });
+      
+      newClient
+        .connect()
+        .then(async () => {
+          console.log("connection to mongodb successful (NEW)");
+      
+          const collection = newClient.db("blockmap").collection("buildings");
+      
+          await collection.insertMany(Object.values(buildings));
+      
+          return newClient.close();
+        })
+        .catch((err) => console.error(err));
+
 }
 
-/*
-Example object in data array here:
-  {
-    Course: 'ACCOUNTG 221 01LL 10002 1243',
-    'Reference #': '2023-ACQZQV',
-    Organization: '5-ACCOUNTG',
-    'Event Start Date': 45329.37847222222, 
-    'Event End Date': 45420.413194444445, 
-    MO: '',
-    TU: '',
-    WE: 'WE',
-    TH: '',
-    FR: '',
-    SA: '',
-    SU: '',
-    'Event Start Time': 45329.37847222222,
-    'Event End Time': 45420.413194444445,
-    'Exp Head Count': 25,
-    'Reg Head Count': 22,
-    Location: 'SOM0120',
-    'Loc Max Cap': 25
-  },
-*/
 
-let data = getData();
+function addBuildingBlocks() {
 
-// Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
-data = data.filter(item => !item.Course.startsWith('EXAM'));
+    const newClient = new MongoClient(uri, {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
 
-const buildings = {};
-data.forEach(item => {
-    const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
-    const roomKey = `${buildingCode}_${roomCode}`;
 
-    if (!buildings[buildingCode]) {
-        buildings[buildingCode] = {
-            "buildingCode": buildingCode,
-            "blocks": {
-                "Mon": [],
-                "Tue": [],
-                "Wed": [],
-                "Thu": [],
-                "Fri": [],
-                "Sat": [],
-                "Sun": [],
-            },
-            "rooms": []
-        };
-    }
-
-    if (!buildings[buildingCode].rooms.find(room => room.roomCode === roomKey)) {
-        buildings[buildingCode].rooms.push({
-            "roomCode": roomKey,
-            "blocks": {
-                "Mon": [],
-                "Tue": [],
-                "Wed": [],
-                "Thu": [],
-                "Fri": [],
-                "Sat": [],
-                "Sun": [],
-            }
+      newClient
+      .connect()
+      .then(async () => {
+        console.log("connection to mongodb successful (NEW)");
+    
+        const collection = newClient.db("blockmap").collection("buildings");
+    
+        await collection.updateMany({}, {
+          $set: {
+            "blocks.Mon": [[700, 2200]],
+            "blocks.Tue": [[700, 2200]],
+            "blocks.Wed": [[700, 2200]],
+            "blocks.Thu": [[700, 2200]],
+            "blocks.Fri": [[700, 1900]],
+            "blocks.Sat": [[1200, 2200]],
+            "blocks.Sun": [[1600, 2200]]
+          }
         });
-    }
+    
+        return newClient.close();
+      })
+      .catch((err) => console.error(err));
 
-    const room = buildings[buildingCode].rooms.find(room => room.roomCode === roomKey);
-    if (item.MO) room.blocks["Mon"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.TU) room.blocks["Tue"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.WE) room.blocks["Wed"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.TH) room.blocks["Thu"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.FR) room.blocks["Fri"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.SA) room.blocks["Sat"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-    if (item.SU) room.blocks["Sun"].push([convertTime(item['Event Start Time']), convertTime(item['Event End Time'])]);
-});
+}
 
-newClient.connect()
-.then(async () => {
-    console.log("connection to mongodb successful (NEW)");
 
-    const collection = newClient.db('blockmap').collection('buildings');
 
-    await collection.insertMany(Object.values(buildings));
-
-    return newClient.close();
-})
-.catch(err => console.error(err));
 
 
 /*
@@ -140,4 +218,3 @@ Example Document:
     ]
 }
 */
-
