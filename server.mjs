@@ -1,13 +1,15 @@
 import express from "express";
 import dotenv from 'dotenv'
 
-import { getBuildings, getRoom, getRooms, test } from './database.mjs'
+import { getBuildings, getRoom, getRooms } from './database.mjs'
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
 dotenv.config()
 const app = express();
 const port = 3000;
 const uri = process.env.URI;
+
+app.use(express.json());
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -48,8 +50,10 @@ app.post('/rooms', async(req, res) => {
     }
 });
 
+
 app.get('/room', async(req, res) => {
     const roomId = req.query.roomId;
+    console.log("ROOMID:", roomId)
     try {
       const room = await getRoom(client, roomId);
       res.json(room)
@@ -60,17 +64,6 @@ app.get('/room', async(req, res) => {
 });
 
 
-
-//for testing
-app.get('/test', async(req, res) => {
-  try {
-    const documents = await test(client)
-    res.json(documents);
-  } catch (error) {
-      console.error(error)
-      res.status(500).json({ error: 'An error occurred' })
-  }
-});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
