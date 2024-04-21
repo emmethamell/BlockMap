@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from 'dotenv'
+import cors from 'cors';
 
 import { getBuildings, getRoom, getRooms } from './database.mjs'
 import { MongoClient, ServerApiVersion } from 'mongodb';
@@ -10,6 +11,7 @@ const port = 3000;
 const uri = process.env.URI;
 
 app.use(express.json());
+app.use(cors()); 
 
 const client = new MongoClient(uri, {
     serverApi: {
