@@ -3,7 +3,12 @@
 async function getBuildings(client) {
     const db = client.db('blockmap');
     const buildings = await db.collection('buildings').find({}).toArray();
-    return buildings.map(x => ({buildingCode: x.buildingCode, hours: x.blocks}))
+
+    if(buildings){
+        return buildings.map(x => ({buildingCode: x.buildingCode, hours: x.blocks}))
+    }else{
+        return {"ERROR": "COULD NOT ACCESS BUILDINGS"}
+    }
 }
 
 //roomIds is an array of room ids in the format {BUILDING_CODE}_{ROOM_CODE}
@@ -23,6 +28,8 @@ async function getRooms(client, roomIds) {
         if (document) {
             let room = document.rooms.filter(room => room.roomCode === roomId);
             rooms.push({building_code: buildingToFind, room_code: roomCode, Blocks: room[0].blocks});
+        }else{
+            return {"ERROR": "INVALID ROOM CODE"}
         }
     }
 
