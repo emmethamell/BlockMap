@@ -185,8 +185,96 @@ function addBuildingBlocks() {
 
 }
 
-function changeUnderscores() {
-  
+async function sort() {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+
+  try {
+    await client.connect();
+
+    const buildings = client.db("blockmap").collection("buildings");
+    const cursor = buildings.find();
+
+    while (await cursor.hasNext()) {
+      const building = await cursor.next();
+      for (let room of building.rooms) {
+        for (let day of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
+          if (room.blocks[day]) {
+            room.blocks[day] = Array.from(
+              new Set(room.blocks[day].sort((a, b) => a[0] - b[0]))
+            );
+          }
+        }
+      }
+      await buildings.updateOne(
+        { _id: building._id },
+        { $set: { rooms: building.rooms } }
+      );
+    }
+  } finally {
+    await client.close();
+  }
+}
+
+async function removeDuplicates() {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+
+  try {
+    await client.connect();
+
+    const buildings = client.db("blockmap").collection("buildings");
+    const cursor = buildings.find();
+
+    while (await cursor.hasNext()) {
+      const building = await cursor.next();
+      for (let room of building.rooms) {
+        for (let day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']) {
+          if (room.blocks[day]) {
+            const uniqueBlocks = Array.from(new Set(room.blocks[day].map(JSON.stringify)), JSON.parse);
+            room.blocks[day] = uniqueBlocks;
+          }
+        }
+      }
+     await buildings.updateOne({ _id: building._id }, { $set: { rooms: building.rooms } });
+    }
+  } finally {
+    await client.close();
+  }
+}
+
+async function deleteAll() {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+
+ try {
+  await client.connect();
+  const collection = client.db("blockmap").collection("buildings");
+  await collection.deleteMany({}, function (err, result) {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log("All documents deleted");
+    }
+  });
+ } finally {
+  await client.close();
+ }
 }
 
 
