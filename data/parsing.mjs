@@ -6,27 +6,24 @@ import { convertTime } from "./helpers.mjs";
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
 
-
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
 function addData() {
+  function getData() {
+    const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
+    const sheetName = workbook.SheetNames[1];
+    const worksheet = workbook.Sheets[sheetName];
 
-    const newClient = new MongoClient(uri, {
-        serverApi: {
-          version: ServerApiVersion.v1,
-          strict: true,
-          deprecationErrors: true,
-        },
-      });
+    return XLSX.utils.sheet_to_json(worksheet);
+  }
 
-    function getData() {
-        const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
-        const sheetName = workbook.SheetNames[1];
-        const worksheet = workbook.Sheets[sheetName];
-      
-        return XLSX.utils.sheet_to_json(worksheet);
-      }
-      
-      /*
+  /*
       Example object in data array here:
         {
           Course: 'ACCOUNTG 221 01LL 10002 1243',
@@ -49,125 +46,115 @@ function addData() {
           'Loc Max Cap': 25
         },
       */
-      
-      let data = getData();
-      
-      // Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
-      data = data.filter((item) => !item.Course.startsWith("EXAM"));
-      
-      const buildings = {};
-      data.forEach((item) => {
-        const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
-        const roomKey = `${buildingCode}_${roomCode}`;
-      
-        if (!buildings[buildingCode]) {
-          buildings[buildingCode] = {
-            buildingCode: buildingCode,
-            blocks: {
-              Mon: [],
-              Tue: [],
-              Wed: [],
-              Thu: [],
-              Fri: [],
-              Sat: [],
-              Sun: [],
-            },
-            rooms: [],
-          };
-        }
-      
-        if (
-          !buildings[buildingCode].rooms.find((room) => room.roomCode === roomKey)
-        ) {
-          buildings[buildingCode].rooms.push({
-            roomCode: roomKey,
-            blocks: {
-              Mon: [],
-              Tue: [],
-              Wed: [],
-              Thu: [],
-              Fri: [],
-              Sat: [],
-              Sun: [],
-            },
-          });
-        }
-      
-        const room = buildings[buildingCode].rooms.find(
-          (room) => room.roomCode === roomKey
-        );
-        if (item.MO)
-          room.blocks["Mon"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.TU)
-          room.blocks["Tue"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.WE)
-          room.blocks["Wed"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.TH)
-          room.blocks["Thu"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.FR)
-          room.blocks["Fri"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.SA)
-          room.blocks["Sat"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-        if (item.SU)
-          room.blocks["Sun"].push([
-            convertTime(item["Event Start Time"]),
-            convertTime(item["Event End Time"]),
-          ]);
-      });
-      
-      newClient
-        .connect()
-        .then(async () => {
-          console.log("connection to mongodb successful (NEW)");
-      
-          const collection = newClient.db("blockmap").collection("buildings");
-      
-          await collection.insertMany(Object.values(buildings));
-      
-          return newClient.close();
-        })
-        .catch((err) => console.error(err));
 
-}
+  let data = getData();
 
+  // Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
+  data = data.filter((item) => !item.Course.startsWith("EXAM"));
 
-function addBuildingBlocks() {
+  const buildings = {};
+  data.forEach((item) => {
+    const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
+    const roomKey = `${buildingCode}_${roomCode}`;
 
-    const newClient = new MongoClient(uri, {
-        serverApi: {
-          version: ServerApiVersion.v1,
-          strict: true,
-          deprecationErrors: true,
+    if (!buildings[buildingCode]) {
+      buildings[buildingCode] = {
+        buildingCode: buildingCode,
+        blocks: {
+          Mon: [],
+          Tue: [],
+          Wed: [],
+          Thu: [],
+          Fri: [],
+          Sat: [],
+          Sun: [],
+        },
+        rooms: [],
+      };
+    }
+
+    if (
+      !buildings[buildingCode].rooms.find((room) => room.roomCode === roomKey)
+    ) {
+      buildings[buildingCode].rooms.push({
+        roomCode: roomKey,
+        blocks: {
+          Mon: [],
+          Tue: [],
+          Wed: [],
+          Thu: [],
+          Fri: [],
+          Sat: [],
+          Sun: [],
         },
       });
+    }
 
+    const room = buildings[buildingCode].rooms.find(
+      (room) => room.roomCode === roomKey
+    );
+    if (item.MO)
+      room.blocks["Mon"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.TU)
+      room.blocks["Tue"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.WE)
+      room.blocks["Wed"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.TH)
+      room.blocks["Thu"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.FR)
+      room.blocks["Fri"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.SA)
+      room.blocks["Sat"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+    if (item.SU)
+      room.blocks["Sun"].push([
+        convertTime(item["Event Start Time"]),
+        convertTime(item["Event End Time"]),
+      ]);
+  });
 
-      newClient
-      .connect()
-      .then(async () => {
-        console.log("connection to mongodb successful (NEW)");
-    
-        const collection = newClient.db("blockmap").collection("buildings");
-    
-        await collection.updateMany({}, {
+  newClient
+    .connect()
+    .then(async () => {
+      console.log("connection to mongodb successful (NEW)");
+
+      const collection = newClient.db("blockmap").collection("buildings");
+
+      await collection.insertMany(Object.values(buildings));
+
+      return newClient.close();
+    })
+    .catch((err) => console.error(err));
+}
+
+function addBuildingBlocks() {
+  client
+    .connect()
+    .then(async () => {
+      console.log("connection to mongodb successful (NEW)");
+
+      const collection = newClient.db("blockmap").collection("buildings");
+
+      await collection.updateMany(
+        {},
+        {
           $set: {
             "blocks.Mon": [[700, 2200]],
             "blocks.Tue": [[700, 2200]],
@@ -175,24 +162,17 @@ function addBuildingBlocks() {
             "blocks.Thu": [[700, 2200]],
             "blocks.Fri": [[700, 1900]],
             "blocks.Sat": [[1200, 2200]],
-            "blocks.Sun": [[1600, 2200]]
-          }
-        });
-    
-        return newClient.close();
-      })
-      .catch((err) => console.error(err));
+            "blocks.Sun": [[1600, 2200]],
+          },
+        }
+      );
 
+      return newClient.close();
+    })
+    .catch((err) => console.error(err));
 }
 
 async function sort() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
 
   try {
     await client.connect();
@@ -222,14 +202,6 @@ async function sort() {
 }
 
 async function removeDuplicates() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-
   try {
     await client.connect();
 
@@ -239,14 +211,20 @@ async function removeDuplicates() {
     while (await cursor.hasNext()) {
       const building = await cursor.next();
       for (let room of building.rooms) {
-        for (let day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']) {
+        for (let day of ["Mon", "Tue", "Wed", "Thu", "Fri"]) {
           if (room.blocks[day]) {
-            const uniqueBlocks = Array.from(new Set(room.blocks[day].map(JSON.stringify)), JSON.parse);
+            const uniqueBlocks = Array.from(
+              new Set(room.blocks[day].map(JSON.stringify)),
+              JSON.parse
+            );
             room.blocks[day] = uniqueBlocks;
           }
         }
       }
-     await buildings.updateOne({ _id: building._id }, { $set: { rooms: building.rooms } });
+      await buildings.updateOne(
+        { _id: building._id },
+        { $set: { rooms: building.rooms } }
+      );
     }
   } finally {
     await client.close();
@@ -254,32 +232,21 @@ async function removeDuplicates() {
 }
 
 async function deleteAll() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
 
- try {
-  await client.connect();
-  const collection = client.db("blockmap").collection("buildings");
-  await collection.deleteMany({}, function (err, result) {
-    if (err) {
-      console.error(err);
-    } else {
-      console.log("All documents deleted");
-    }
-  });
- } finally {
-  await client.close();
- }
+  try {
+    await client.connect();
+    const collection = client.db("blockmap").collection("buildings");
+    await collection.deleteMany({}, function (err, result) {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log("All documents deleted");
+      }
+    });
+  } finally {
+    await client.close();
+  }
 }
-
-
-
-
 
 /*
 Each building is a document in a buildings collection.
