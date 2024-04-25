@@ -1,28 +1,26 @@
 import dotenv from "dotenv";
-import XLSX from "xlsx";
 import { MongoClient, ServerApiVersion } from "mongodb";
-import { convertTime } from "./helpers.mjs";
+import { convertTime, getData } from "./helpers.mjs";
 
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+//TODO: Filter out Location: ON-LINE
+
+
+function connectDB() {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+
+  return client;
+}
 
 function addData() {
-  function getData() {
-    const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
-    const sheetName = workbook.SheetNames[1];
-    const worksheet = workbook.Sheets[sheetName];
-
-    return XLSX.utils.sheet_to_json(worksheet);
-  }
-
   /*
       Example object in data array here:
         {
@@ -47,15 +45,30 @@ function addData() {
         },
       */
 
+  const client = connectDB();
+
   let data = getData();
 
   // Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
-  data = data.filter((item) => !item.Course.startsWith("EXAM"));
+  data = data.filter((item) => (!item.Course.startsWith("EXAM")));
+  console.log("SIZE BEFORE: ", data.length);
+  
+  // Filtering out the courses that start and end on the same day
+  data = data.filter((item) => {
+    const startDate = Math.floor(item["Event Start Time"]);
+    const endDate = Math.floor(item["Event End Time"]);
+    
+    return startDate !== endDate;
+  });
+  console.log("SIZE AFTER: ", data.length);
+
 
   const buildings = {};
   data.forEach((item) => {
     const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
     const roomKey = `${buildingCode}_${roomCode}`;
+
+    if (buildingCode !== "" && buildingCode !== "ON-LINE") {
 
     if (!buildings[buildingCode]) {
       buildings[buildingCode] = {
@@ -128,29 +141,33 @@ function addData() {
         convertTime(item["Event Start Time"]),
         convertTime(item["Event End Time"]),
       ]);
+    }
+
   });
 
-  newClient
-    .connect()
-    .then(async () => {
-      console.log("connection to mongodb successful (NEW)");
-
-      const collection = newClient.db("blockmap").collection("buildings");
-
-      await collection.insertMany(Object.values(buildings));
-
-      return newClient.close();
-    })
-    .catch((err) => console.error(err));
-}
-
-function addBuildingBlocks() {
   client
     .connect()
     .then(async () => {
       console.log("connection to mongodb successful (NEW)");
 
-      const collection = newClient.db("blockmap").collection("buildings");
+      const collection = client.db("blockmap").collection("buildings");
+
+      await collection.insertMany(Object.values(buildings));
+
+      return client.close();
+    })
+    .catch((err) => console.error(err));
+}
+
+function addBuildingBlocks() {
+  const client = connectDB();
+
+  client
+    .connect()
+    .then(async () => {
+      console.log("connection to mongodb successful (NEW)");
+
+      const collection = client.db("blockmap").collection("buildings");
 
       await collection.updateMany(
         {},
@@ -167,12 +184,13 @@ function addBuildingBlocks() {
         }
       );
 
-      return newClient.close();
+      return client.close();
     })
     .catch((err) => console.error(err));
 }
 
 async function sort() {
+  const client = connectDB();
 
   try {
     await client.connect();
@@ -202,6 +220,9 @@ async function sort() {
 }
 
 async function removeDuplicates() {
+
+  const client = connectDB();
+
   try {
     await client.connect();
 
@@ -231,7 +252,10 @@ async function removeDuplicates() {
   }
 }
 
+
+
 async function deleteAll() {
+  const client = connectDB();
 
   try {
     await client.connect();
@@ -247,6 +271,29 @@ async function deleteAll() {
     await client.close();
   }
 }
+
+function getBuildingCodes() {
+  let data = getData();
+  data = data.filter((item) => !item.Course.startsWith("EXAM"));
+
+  let buildingCodes = []
+  data.forEach((item) => {
+    const buildingCode = item.Location.split(/(\d+)/g)[0];
+    if (!buildingCodes.includes(buildingCode)) {
+      buildingCodes.push(buildingCode)
+    } 
+  });
+
+  buildingCodes = buildingCodes.filter((code) => {
+    return (code && code !== "" && code !== "ON-LINE")
+  })
+
+  return buildingCodes
+}
+
+
+
+
 
 /*
 Each building is a document in a buildings collection.
@@ -277,3 +324,5 @@ Example Document:
     ]
 }
 */
+
+
