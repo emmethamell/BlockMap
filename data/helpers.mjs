@@ -1,11 +1,28 @@
+import XLSX from "xlsx";
 
 function convertTime(excelDateTime) {
-    const excelTime = excelDateTime % 1; 
-    const hours = Math.floor(excelTime * 24);
-    const minutes = Math.round((excelTime * 24 - hours) * 60);
-    return hours * 100 + minutes; 
+    let excelTime = excelDateTime % 1; 
+    let hours = Math.floor(excelTime * 24);
+    let minutes = Math.round((excelTime * 24 - hours) * 60);
+    if (minutes === 60) {
+        minutes = 0;
+        hours++;
+    }
+
+    const time = hours * 100 + minutes;
+
+    return time;
 }
 
 
-export { convertTime }
+function getData() {
+    const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
+    const sheetName = workbook.SheetNames[1];
+    const worksheet = workbook.Sheets[sheetName];
+
+    return XLSX.utils.sheet_to_json(worksheet);
+}
+
+
+export { convertTime, getData }
 
