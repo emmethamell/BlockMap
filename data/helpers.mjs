@@ -39,7 +39,7 @@ function getBuildingAndRoomCodes(locationString) {
      * were in descending order, it would be identified first as "BCA", which is *not* correct. 
      */
     let building = buildingCodes.find(code => locationString.startsWith(code)); 
-    // if location isn't a part of a valid builing, throw error
+    // if location isn't a part of a valid building, throw error
     if (building === undefined) { throw new Error("Invalid building code."); } 
     // get room code (all characters after building code, leading zeros removed)
     let room = locationString.substring(building.length).replace(/^0+/, "");
