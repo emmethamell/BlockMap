@@ -1,77 +1,77 @@
+// ATTENTION: THIS ARRAY MUST BE IN ASCENDING ORDER TO SEARCH BUILDING CODES PROPERLY
 export const buildingCodes = [
-    "AEBC", // Ag. Engin. Central
-    "AEBCXB", // Ag. Engin. Bldg Annex B
-    "AEBN", // Ag. Engineering Bldg
-    "ARND", // Arnold Hall
-    "BART", // Bartlett Hall
-    "BCA", // Bromery Center for Arts
-    "BCABZSN", // Bromery Center Bezanson Hall
-    "BFLD", // Butterfield House
-    "BOWD", // Bowditch Hall
-    "BOYD", // Boyden Gym
-    "CC", // Campus Center
-    "CHEN", // Chenoweth Lab addn.
-    "CHNW", // Chenoweth Lab
-    "CHNWPLNT", // Chenoweth Pilot Plant
-    "CMPS", // Computer Science Building
-    "CNTE", // Conte Polymer Res Ctr
-    "CURTTHEAT", // Curtain Theater
-    "DB", // Design Building
-    "DKSN", // Dickinson Hall
-    "DRA", // Draper Hall
-    "DWGT", // Dwight House
-    "ELAB", // Engineering Lab
-    "ELABII", // Engineering Lab II
-    "ELM", // Elm Hall/House
-    "EMER", // Emerson Hall
-    "FERN", // Fernald Hall
-    "FLIN", // Flint Laboratory
-    "FREN", // French Hall
-    "FURC", // Furcolo Hall
-    "GOES", // Goessmann Hal
-    "GORDNHALL", // Gordon Hall
-    "GORM", // Gorman House
-    "GP", // George Parks Bldg 
-    "GSMN", // Goessmann Hall addn.
-    "GUN", // Gunness Hall
-    "HAS", // Hasbrouck Laboratory
-    "HASA", // Hasbrouck Laboratory addn.
-    "HERT", // Herter Hall
-    "HICKPOOL", // Curry Hicks Phys. Ed Bldg Pool
-    "HOLD", // Holdsworth Hall
-    "ILC", // Integrative Learning Center
-    "IS",  // Integrated Science Labs
-    "ISB", // Integrated Sciences Building
-    "LGRC", // Lederle Graduate Research Center
-    "LGRT", // Lederle Graduate Research Tower
-    "LIB", // WEB DuBois Library
-    "LSL", // Life Sciences Lab
-    "LYON", // Mary Lyon House
-    "MACH", // Machmer Hall
-    "MAH", // Mahar Auditorium
-    "MARC", // Marcus Hall  
-    "MELV", // Melville Hall
-    "MONT", // Montague House
-    "MOR", // Morrill
-    "MOR1", // Morrill I
-    "MOR2", // Morrill II
-    "MOR3", // Morrill III
-    "MOR4", // MOrrill IV
-    "MRST", // Marston Hall
-    "NAH", // New Africa House
-    "PAIG", // Paige Laboratory
-    "RANDSTAGE", // Rand Stage 
-    "RANDUPPR", // Rand Upper Lobby 
-    "REG", // Research & Educ Greenhouse
-    "SAB", // Studio Arts Building
-    "SC", // South College
-    "SKIN", // Skinner Hall
-    "SOM", // School of Management
-    "STK", // Stockbridge Hall
-    "THCH", // Thatcher House
-    "THOM", // Thompson Hall
-    "TOBN", // Tobin Hall
-    "TOTM", // Totman Gym
-    "WHEEL", // Wheeler Hall
     "WORC", // Worcester Dining Hall
+    "WHEEL", // Wheeler Hall
+    "TOTM", // Totman Gym
+    "TOBN", // Tobin Hall
+    "THOM", // Thompson Hall
+    "THCH", // Thatcher House
+    "STK", // Stockbridge Hall
+    "SOM", // School of Management
+    "SKIN", // Skinner Hall
+    "SC", // South College
+    "SAB", // Studio Arts Building
+    "REG", // Research & Educ Greenhouse
+    "RANDUPPR", // Rand Upper Lobby 
+    "RANDSTAGE", // Rand Stage 
+    "PAIG", // Paige Laboratory
+    "NAH", // New Africa House
+    "MRST", // Marston Hall
+    "MOR4", // Morrill IV
+    "MOR3", // Morrill III
+    "MOR2", // Morrill II
+    "MOR1", // Morrill I
+    "MOR", // Morrill
+    "MONT", // Montague House
+    "MELV", // Melville Hall
+    "MARC", // Marcus Hall  
+    "MAH", // Mahar Auditorium
+    "MACH", // Machmer Hall
+    "LYON", // Mary Lyon House
+    "LSL", // Life Sciences Lab
+    "LIB", // WEB DuBois Library
+    "LGRT", // Lederle Graduate Research Tower
+    "LGRC", // Lederle Graduate Research Center
+    "ISB", // Integrated Sciences Building
+    "ILC", // Integrative Learning Center
+    "HOLD", // Holdsworth Hall
+    "HICKPOOL", // Curry Hicks Phys. Ed Bldg Pool
+    "HERT", // Herter Hall
+    "HASA", // Hasbrouck Laboratory addn.
+    "HAS", // Hasbrouck Laboratory
+    "GUN", // Gunness Hall
+    "GSMN", // Goessmann Hall addn.
+    "GP", // George Parks Bldg 
+    "GORM", // Gorman House
+    "GORDNHALL", // Gordon Hall
+    "GOES", // Goessmann Hal
+    "FURC", // Furcolo Hall
+    "FREN", // French Hall
+    "FLIN", // Flint Laboratory
+    "FERN", // Fernald Hall
+    "EMER", // Emerson Hall
+    "ELM", // Elm Hall/House
+    "ELABII", // Engineering Lab II
+    "ELAB", // Engineering Lab
+    "DWGT", // Dwight House
+    "DRA", // Draper Hall
+    "DKSN", // Dickinson Hall
+    "DB", // Design Building
+    "CURTTHEAT", // Curtain Theater
+    "CNTE", // Conte Polymer Res Ctr
+    "CMPS", // Computer Science Building
+    "CHNWPLNT", // Chenoweth Pilot Plant
+    "CHNW", // Chenoweth Lab
+    "CHEN", // Chenoweth Lab addn.
+    "CC", // Campus Center
+    "BOYD", // Boyden Gym
+    "BOWD", // Bowditch Hall
+    "BFLD", // Butterfield House
+    "BCABZSN", // Bromery Center Bezanson Hall
+    "BCA", // Bromery Center for Arts
+    "BART", // Bartlett Hall
+    "ARND", // Arnold Hall
+    "AEBN", // Ag. Engineering Bldg
+    "AEBCXB", // Ag. Engin. Bldg Annex B
+    "AEBC", // Ag. Engin. Central
 ];
