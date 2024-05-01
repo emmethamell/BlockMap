@@ -33,7 +33,6 @@ export const buildingCodes = [
     "LGRT", // Lederle Graduate Research Tower
     "LGRC", // Lederle Graduate Research Center
     "ISB", // Integrated Sciences Building
-    "IS",  // Integrated Science Labs
     "ILC", // Integrative Learning Center
     "HOLD", // Holdsworth Hall
     "HICKPOOL", // Curry Hicks Phys. Ed Bldg Pool
