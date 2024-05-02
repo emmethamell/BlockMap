@@ -1,5 +1,6 @@
 import XLSX from "xlsx";
 import { buildingCodes } from "./building-codes.mjs";
+import moment from 'moment';
 
 function convertTime(excelDateTime) {
     let excelTime = excelDateTime % 1; 
@@ -15,12 +16,23 @@ function convertTime(excelDateTime) {
     return time;
 }
 
+function convertDates(excelDate){
+    const baseDate = moment("1899-12-30");
+    const date = baseDate.add(excelDate, 'days')
+    
+    if(date.isAfter("1900-03-01")){
+        date.subtract(1, 'days')
+    }
+
+    const formattedDate = date.format('MM/DD/YY');
+    return formattedDate
+}
+
 
 function getData() {
     const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
     const sheetName = workbook.SheetNames[1];
     const worksheet = workbook.Sheets[sheetName];
-
     return XLSX.utils.sheet_to_json(worksheet);
 }
 
@@ -47,5 +59,5 @@ function getBuildingAndRoomCodes(locationString) {
 }
 
 
-export { convertTime, getData }
+export { convertTime, getData, convertDates}
 

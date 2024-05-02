@@ -12,8 +12,6 @@ function getData() {
 const data = getData();
 
 
-//console.log(data[681].Location === "") // INSTANCE WHERE LOCATION IS EMPTY 
-
 //finding columns with empty/missing data instances in Excel Sheet Data
 let indexOfMissing = []
 
@@ -24,4 +22,3 @@ for(let i = 0; i < data.length; i++){
 }//We have 167 missing locations 
 
 
-//finding columns with different location naming schemes
