@@ -48,8 +48,9 @@ function getData() {
 
 /** 
  * Takes a location string and returns the correctly formatted building code and room code.
+ * If building code cannot be found, returns [null, null].
  * @param {string} locationString location string from excel sheet
- * @returns {[string, string]} [building_code, room_code]
+ * @returns {[string, string] | [null, null]} [building_code, room_code] | [null, null]
  */
 function getBuildingAndRoomCodes(locationString) {
     // remove all hyphens (if they exist)
@@ -60,14 +61,13 @@ function getBuildingAndRoomCodes(locationString) {
      * building code will be correctly identified as "BCABZSN", and not "BCA". If the list
      * were in descending order, it would be identified first as "BCA", which is *not* correct. 
      */
-    let building = buildingCodes.find(code => locationString.startsWith(code)); 
-    // if location isn't a part of a valid building, throw error
-    if (building === undefined) { throw new Error("Invalid building code."); } 
-    // get room code (all characters after building code, leading zeros removed)
+    let building = buildingCodes.find(code => locationString.startsWith(code));
+    if (!building) { return [null, null]; }
+    // get room code (all characters after building code, leading zeroes removed)
     let room = locationString.substring(building.length).replace(/^0+/, "");
     return [building, room];
 }
 
 
-export { convertTime, getData, convertDates}
+export { convertTime, getData, convertDates, getBuildingAndRoomCodes}
 
