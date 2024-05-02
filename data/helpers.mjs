@@ -2,6 +2,10 @@ import XLSX from "xlsx";
 import { buildingCodes } from "./building-codes.mjs";
 import moment from 'moment';
 
+/** 
+ * converts excel times to valid eastern standard time (EST)
+ * @returns {int}
+ */
 function convertTime(excelDateTime) {
     let excelTime = excelDateTime % 1; 
     let hours = Math.floor(excelTime * 24);
@@ -15,7 +19,10 @@ function convertTime(excelDateTime) {
 
     return time;
 }
-
+/** 
+ * Takes double input and returns the mm/dd/yy date
+ * @returns {string}
+ */
 function convertDates(excelDate){
     const baseDate = moment("1899-12-30");
     const date = baseDate.add(excelDate, 'days')
@@ -28,7 +35,10 @@ function convertDates(excelDate){
     return formattedDate
 }
 
-
+/** 
+ * Takes no input and returns the JSON formatted data from Excel sheet.
+ * @returns Array of JSON formatted objects
+ */
 function getData() {
     const workbook = XLSX.readFile("./Spring_2024_Class_Schedule.xlsx");
     const sheetName = workbook.SheetNames[1];

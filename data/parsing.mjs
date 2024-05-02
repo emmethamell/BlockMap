@@ -7,7 +7,7 @@ const uri = process.env.URI;
 
 //TODO: Filter out Location: ON-LINE
 
-
+//function to connect to DB client
 function connectDB() {
   const client = new MongoClient(uri, {
     serverApi: {
@@ -19,7 +19,7 @@ function connectDB() {
 
   return client;
 }
-
+//populate the data base with building and room info 
 function addData() {
   /*
       Example object in data array here:
@@ -158,7 +158,7 @@ function addData() {
     })
     .catch((err) => console.error(err));
 }
-
+//add building block hour times in DB
 function addBuildingBlocks() {
   const client = connectDB();
 
@@ -188,7 +188,7 @@ function addBuildingBlocks() {
     })
     .catch((err) => console.error(err));
 }
-
+//sorts the times of classes in ascending order in DB
 async function sort() {
   const client = connectDB();
 
@@ -218,7 +218,7 @@ async function sort() {
     await client.close();
   }
 }
-
+//removes duplicate times in the DB
 async function removeDuplicates() {
 
   const client = connectDB();
@@ -253,7 +253,7 @@ async function removeDuplicates() {
 }
 
 
-
+//deletes all entries in database in case needing to repopulate
 async function deleteAll() {
   const client = connectDB();
 
@@ -271,7 +271,7 @@ async function deleteAll() {
     await client.close();
   }
 }
-
+//gets desired building codes from excel sheet
 function getBuildingCodes() {
   let data = getData();
   data = data.filter((item) => !item.Course.startsWith("EXAM"));

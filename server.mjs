@@ -31,6 +31,11 @@ process.on('SIGTERM', () => client.close());
 
 
 //ENDPOINTS
+/**
+ * @GET /BlockMap
+ * @description Get buildings from BlockMap database based on building code query parameter
+ * No queries, returns all building information
+ */
 app.get('/buildings', async(req, res) => {
   try {
     const buildings = await getBuildings(client)
@@ -40,7 +45,11 @@ app.get('/buildings', async(req, res) => {
     res.status(500).json({ error: 'An error occurred' })
   }
 });
-
+/**
+ * @GET /BlockMap
+ * @description Batch get rooms from the BlockMap database based on query parameters
+ * @query {string} roomIds - the group of rooms to get, formatted as building-room
+ */
 app.post('/rooms', async(req, res) => {
     const roomIds = req.body;
     try {
@@ -52,7 +61,11 @@ app.post('/rooms', async(req, res) => {
     }
 });
 
-
+/**
+ * @GET /BlockMap
+ * @description get singular from the BlockMap database based on query parameters
+ * @query {string} roomId - the rooms to get, formatted as building-room
+ */
 app.get('/room', async(req, res) => {
     const roomId = req.query.roomId;
     console.log("ROOMID:", roomId)
