@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
-import { convertTime, getData } from "./helpers.mjs";
+import { convertTime, getData, convertDates} from "./helpers.mjs";
 
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
@@ -291,9 +291,44 @@ function getBuildingCodes() {
   return buildingCodes
 }
 
+//adding exception dates to corresponding rooms
+async function addExceptions(){
+  const client = connectDB();
+  try{
+   await client.connect();
+    const collection = client.db("blockmap").collection("buildings");
+    let data = await getData();
+   
+    let examRooms = data.filter( item => item.Course.startsWith("EXAM"));
+    let validRooms = examRooms.filter(item => (item.Location !== "" && item.Location !== "ON-LINE" ))
+    let document = await collection.findOne({buildingCode: "MAH", "rooms.roomCode": "MAH_0108"})
+    const [buildingCode, roomCode] = validRooms[0].Location.split(/(\d+)/g).slice(0, 2);
+    const roomKey = `${buildingCode}_${roomCode}`;
+    let date = convertDates(validRooms[0]["Event Start Date"])
 
+    //Below is version that updates one document to ensure code was correct
+    let updateDoc = {
+      $set:{
+        "rooms.0.exceptions":{[date]: [convertTime(validRooms[0]["Event Start Time"]), convertTime(validRooms[0]["Event End Time"])]}
+      }
+    }
+    //TODO: have it iterate through all of the valid exam dates and rooms 
 
+   // for(let i = 0; i < validRooms.length; ++i){  
+   //   let [buildingCode, roomCode] = validRooms[0].Location.split(/(\d+)/g).slice(0, 2);
+    //  let roomKey = `${buildingCode}_${roomCode}`;
+    //  let doc = await collection.findOne({buildingCode: validRoom[i].Location})
+   // }
 
+   //const result = await collection.updateOne(document, updateDoc) --> 
+   
+  }catch (error){
+    console.error(error)
+  }finally{
+    await client.close()
+  }
+  }
+ 
 
 /*
 Each building is a document in a buildings collection.
