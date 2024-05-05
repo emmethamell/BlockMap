@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
-import { convertTime, getData } from "./helpers.mjs";
+import { convertTime, getData, getBuildingAndRoomCodes } from "./helpers.mjs";
 
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
@@ -65,10 +65,12 @@ function addData() {
 
   const buildings = {};
   data.forEach((item) => {
-    const [buildingCode, roomCode] = item.Location.split(/(\d+)/g).slice(0, 2);
-    const roomKey = `${buildingCode}_${roomCode}`;
-
-    if (buildingCode !== "" && buildingCode !== "ON-LINE") {
+    const [buildingCode, roomCode] = getBuildingAndRoomCodes(item.Location);
+    if (!buildingCode) {
+      return; // if building code is invalid, skip this item
+    }
+    
+    const roomKey = `${buildingCode}-${roomCode}`;
 
     if (!buildings[buildingCode]) {
       buildings[buildingCode] = {
@@ -141,7 +143,6 @@ function addData() {
         convertTime(item["Event Start Time"]),
         convertTime(item["Event End Time"]),
       ]);
-    }
 
   });
 
