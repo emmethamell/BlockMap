@@ -5,7 +5,6 @@ import { convertTime, getData, getBuildingAndRoomCodes } from "./helpers.mjs";
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
 
-//TODO: Filter out Location: ON-LINE
 
 //function to connect to DB client
 function connectDB() {
@@ -19,8 +18,8 @@ function connectDB() {
 
   return client;
 }
-//populate the data base with building and room info 
-function addData() {
+//populate the database with building and room info 
+async function addData() {
   /*
       Example object in data array here:
         {
@@ -146,7 +145,8 @@ function addData() {
 
   });
 
-  client
+  return new Promise((resolve, reject) => {
+    client
     .connect()
     .then(async () => {
       console.log("connection to mongodb successful (NEW)");
@@ -155,15 +155,20 @@ function addData() {
 
       await collection.insertMany(Object.values(buildings));
 
-      return client.close();
+      resolve(client.close());
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      console.error(err);
+      reject(err);
+  });
+  });
 }
 //add building block hour times in DB
-function addBuildingBlocks() {
+async function addBuildingBlocks() {
   const client = connectDB();
 
-  client
+  return new Promise((resolve, reject) => {
+    client
     .connect()
     .then(async () => {
       console.log("connection to mongodb successful (NEW)");
@@ -185,9 +190,13 @@ function addBuildingBlocks() {
         }
       );
 
-      return client.close();
+      resolve(client.close());
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      console.error(err)
+      reject(err)
+  });
+  })
 }
 //sorts the times of classes in ascending order in DB
 async function sort() {
@@ -254,6 +263,8 @@ async function removeDuplicates() {
 }
 
 
+
+
 //deletes all entries in database in case needing to repopulate
 async function deleteAll() {
   const client = connectDB();
@@ -291,6 +302,19 @@ function getBuildingCodes() {
 
   return buildingCodes
 }
+
+async function populateDatabase() {
+  try {
+    await addData();
+    await addBuildingBlocks();
+    await sort();
+    await removeDuplicates();
+  } catch (error) {
+    console.error("ERROR POPLATING DATABASE: ", error);
+  }
+}
+
+
 
 
 
