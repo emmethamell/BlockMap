@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import { convertTime, getData, getBuildingAndRoomCodes } from "./helpers.mjs";
+import fs from "fs";
 
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
-
 
 //function to connect to DB client
 function connectDB() {
@@ -18,7 +18,7 @@ function connectDB() {
 
   return client;
 }
-//populate the database with building and room info 
+//populate the database with building and room info
 async function addData() {
   /*
       Example object in data array here:
@@ -49,18 +49,17 @@ async function addData() {
   let data = getData();
 
   // Filtering out exam times as we arent including dates in blocks. We should probably add them in somehow later though
-  data = data.filter((item) => (!item.Course.startsWith("EXAM")));
+  data = data.filter((item) => !item.Course.startsWith("EXAM"));
   console.log("SIZE BEFORE: ", data.length);
-  
+
   // Filtering out the courses that start and end on the same day
   data = data.filter((item) => {
     const startDate = Math.floor(item["Event Start Time"]);
     const endDate = Math.floor(item["Event End Time"]);
-    
+
     return startDate !== endDate;
   });
   console.log("SIZE AFTER: ", data.length);
-
 
   const buildings = {};
   data.forEach((item) => {
@@ -68,7 +67,7 @@ async function addData() {
     if (!buildingCode) {
       return; // if building code is invalid, skip this item
     }
-    
+
     const roomKey = `${buildingCode}-${roomCode}`;
 
     if (!buildings[buildingCode]) {
@@ -142,25 +141,24 @@ async function addData() {
         convertTime(item["Event Start Time"]),
         convertTime(item["Event End Time"]),
       ]);
-
   });
 
   return new Promise((resolve, reject) => {
     client
-    .connect()
-    .then(async () => {
-      console.log("connection to mongodb successful (NEW)");
+      .connect()
+      .then(async () => {
+        console.log("connection to mongodb successful (NEW)");
 
-      const collection = client.db("blockmap").collection("buildings");
+        const collection = client.db("blockmap").collection("buildings");
 
-      await collection.insertMany(Object.values(buildings));
+        await collection.insertMany(Object.values(buildings));
 
-      resolve(client.close());
-    })
-    .catch((err) => {
-      console.error(err);
-      reject(err);
-  });
+        resolve(client.close());
+      })
+      .catch((err) => {
+        console.error(err);
+        reject(err);
+      });
   });
 }
 //add building block hour times in DB
@@ -169,34 +167,34 @@ async function addBuildingBlocks() {
 
   return new Promise((resolve, reject) => {
     client
-    .connect()
-    .then(async () => {
-      console.log("connection to mongodb successful (NEW)");
+      .connect()
+      .then(async () => {
+        console.log("connection to mongodb successful (NEW)");
 
-      const collection = client.db("blockmap").collection("buildings");
+        const collection = client.db("blockmap").collection("buildings");
 
-      await collection.updateMany(
-        {},
-        {
-          $set: {
-            "blocks.Mon": [[700, 2200]],
-            "blocks.Tue": [[700, 2200]],
-            "blocks.Wed": [[700, 2200]],
-            "blocks.Thu": [[700, 2200]],
-            "blocks.Fri": [[700, 1900]],
-            "blocks.Sat": [[1200, 2200]],
-            "blocks.Sun": [[1600, 2200]],
-          },
-        }
-      );
+        await collection.updateMany(
+          {},
+          {
+            $set: {
+              "blocks.Mon": [[700, 2200]],
+              "blocks.Tue": [[700, 2200]],
+              "blocks.Wed": [[700, 2200]],
+              "blocks.Thu": [[700, 2200]],
+              "blocks.Fri": [[700, 1900]],
+              "blocks.Sat": [[1200, 2200]],
+              "blocks.Sun": [[1600, 2200]],
+            },
+          }
+        );
 
-      resolve(client.close());
-    })
-    .catch((err) => {
-      console.error(err)
-      reject(err)
+        resolve(client.close());
+      })
+      .catch((err) => {
+        console.error(err);
+        reject(err);
+      });
   });
-  })
 }
 //sorts the times of classes in ascending order in DB
 async function sort() {
@@ -230,7 +228,6 @@ async function sort() {
 }
 //removes duplicate times in the DB
 async function removeDuplicates() {
-
   const client = connectDB();
 
   try {
@@ -262,9 +259,6 @@ async function removeDuplicates() {
   }
 }
 
-
-
-
 //deletes all entries in database in case needing to repopulate
 async function deleteAll() {
   const client = connectDB();
@@ -283,25 +277,33 @@ async function deleteAll() {
     await client.close();
   }
 }
+
 //gets desired building codes from excel sheet
 function getBuildingCodes() {
   let data = getData();
   data = data.filter((item) => !item.Course.startsWith("EXAM"));
 
-  let buildingCodes = []
+  let buildingCodes = [];
   data.forEach((item) => {
     const buildingCode = item.Location.split(/(\d+)/g)[0];
     if (!buildingCodes.includes(buildingCode)) {
-      buildingCodes.push(buildingCode)
-    } 
+      buildingCodes.push(buildingCode);
+    }
   });
 
   buildingCodes = buildingCodes.filter((code) => {
-    return (code && code !== "" && code !== "ON-LINE")
-  })
+    return code && code !== "" && code !== "ON-LINE";
+  });
 
-  return buildingCodes
+  return buildingCodes;
 }
+
+
+function replaceBuildingBlocks() {
+
+}
+
+
 
 async function populateDatabase() {
   try {
@@ -313,12 +315,6 @@ async function populateDatabase() {
     console.error("ERROR POPLATING DATABASE: ", error);
   }
 }
-
-
-
-
-
-
 
 /*
 Each building is a document in a buildings collection.
@@ -349,5 +345,3 @@ Example Document:
     ]
 }
 */
-
-
