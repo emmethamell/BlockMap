@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion } from "mongodb";
-import { convertTime, getData, getBuildingAndRoomCodes } from "./helpers.mjs";
+import { convertTime, getData, getBuildingAndRoomCodes, convertDates} from "./helpers.mjs";
 
 dotenv.config({ path: "../.env" });
 const uri = process.env.URI;
@@ -302,7 +302,45 @@ function getBuildingCodes() {
 
   return buildingCodes
 }
+//adds exam time exceptions to database
+async function addExceptions(){
+  const client = connectDB()
+  try{
+    await client.connect();
+    let data = await getData();
+    let examDate = "";
+    let examTime = []
+    let roomAndBuilding = "";
+    let room = "";
+    let building = "";
+    let examData = data.filter( item => item.Course.startsWith("EXAM"));
+    let validLocations = examData.filter(item => (item.Location !== "" && item.Location !== "ON-LINE"))
+    const collection = client.db("blockmap").collection("buildings")
+ 
+    for(let i = 0; i < validLocations.length; i++){
+      examDate = convertDates(validLocations[i]["Event Start Date"])
+      examTime = [convertTime(validLocations[i]["Event Start Time"]), convertTime(validLocations[i]["Event End Time"])]
+      roomAndBuilding = getBuildingAndRoomCodes(validLocations[i].Location)
+      room = roomAndBuilding[0] + "-" + roomAndBuilding[1]
+      building = roomAndBuilding[0]
 
+      await collection.updateOne(
+        {buildingCode: building}, 
+        {$set:{[`rooms.$[elem].exceptions.${examDate}`]: examTime}},
+        {
+          arrayFilters:[{"elem.roomCode": room}]
+        }
+       )
+   }
+  }catch (error){
+    console.error(error)
+ 
+  }finally{
+    await client.close()
+ 
+  }
+ }
+ 
 async function populateDatabase() {
   try {
     await addData();
@@ -313,11 +351,6 @@ async function populateDatabase() {
     console.error("ERROR POPLATING DATABASE: ", error);
   }
 }
-
-
-
-
-
 
 
 /*

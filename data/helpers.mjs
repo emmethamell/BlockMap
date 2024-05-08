@@ -20,7 +20,7 @@ function convertTime(excelDateTime) {
     return time;
 }
 /** 
- * Takes double input and returns the mm/dd/yy date
+ * Takes double input and returns the yyyy-mm-dd date
  * @returns {string}
  */
 function convertDates(excelDate){
@@ -31,7 +31,7 @@ function convertDates(excelDate){
         date.subtract(1, 'days')
     }
 
-    const formattedDate = date.format('MM/DD/YY');
+    const formattedDate = date.format('YYYY-MM-DD');
     return formattedDate
 }
 
