@@ -46,11 +46,10 @@ async function getRoom(client, roomId) {
     const buildingToFind = split[0];
     const roomCode = split[1];
     const collection = db.collection('buildings');
-    const document = await collection.findOne({buildingCode: buildingToFind, "rooms.roomCode": roomId});
-
+    const document = await collection.findOne({buildingCode: buildingToFind});
 
     if (document) {
-        const room = document.rooms.find(room => room.roomCode === roomId);
+        const room = await document.rooms.find(room => room.roomCode === roomId);
         if (room) {
             return {building_code: buildingToFind, room_code: roomCode, Blocks: room.blocks};
         } else {
