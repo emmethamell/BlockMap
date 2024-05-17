@@ -1,7 +1,7 @@
 import XLSX from "xlsx";
 import { buildingCodes } from "./building-codes.mjs";
 import moment from 'moment';
-
+import { parse,format } from 'date-fns';
 /** 
  * converts excel times to valid eastern standard time (EST)
  * @returns {int}
@@ -68,6 +68,58 @@ function getBuildingAndRoomCodes(locationString) {
     return [building, room];
 }
 
+/** 
+* Takes a room document and string date as input. Returns a block object containing room hours
+*@param {object} room 
+*@param {string} date 
+*@returns {string:[int,int]}
+*/
+function formatExceptionDates(room, date){
+    let blocks = {
+        Mon: [],
+        Tue: [],
+        Wed: [],
+        Thu:[],
+        Fri: [],
+        Sat: [],
+        Sun: []
+    }
+    
+    if("exceptions" in room && date in room.exceptions){
+        for(const [date,times] of Object.entries(room.exceptions)){
+            const formatDate = parse(date, 'yyyy-MM-dd', new Date())
+            
+            let dayOfWeek = format(formatDate, 'EEEE')
+            switch(dayOfWeek){
+                case 'Monday':
+                    blocks.Mon.push(times);
+                    break;
+                case 'Tuesday':
+                    blocks.Tue.push(times);
+                    break;
+                case 'Wednesday':
+                    blocks.Wed.push(times);
+                     break;
+                case 'Thursday':
+                    blocks.Thu.push(times);
+                     break;
+                case 'Friday':
+                    blocks.Fri.push(times);
+                    break;
+                case 'Saturday':
+                    blocks.Sat.push(times);
+                    break;
+                 case 'Sunday':
+                    blocks.Sun.push(times);
+                    break;
+            }
+        }
+    }else{
+        blocks = room.blocks
+    }
+    return blocks
+}
 
-export { convertTime, getData, convertDates, getBuildingAndRoomCodes}
+
+export { formatExceptionDates, convertTime, getData, convertDates, getBuildingAndRoomCodes}
 

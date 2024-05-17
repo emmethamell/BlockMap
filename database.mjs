@@ -1,3 +1,6 @@
+import { format } from 'date-fns';
+import { formatExceptionDates } from './data/helpers.mjs';
+
 
 //return an array of building objects for all buildings on campus
 async function getBuildings(client) {
@@ -22,12 +25,14 @@ async function getRooms(client, roomIds) {
         const split = roomId.split("-");
         const buildingToFind = split[0];
         const roomCode = split[1];
-
         const document = await collection.findOne({ buildingCode: buildingToFind, "rooms.roomCode": roomId });
 
+        const today = new Date();
+        let formattedDate = format(today, "yyyy-MM-dd");
         if (document) {
             let room = document.rooms.filter(room => room.roomCode === roomId);
-            rooms.push({building_code: buildingToFind, room_code: roomCode, Blocks: room[0].blocks});
+            const roomBlock = formatExceptionDates(room[0],formattedDate)
+            rooms.push({building_code: buildingToFind, room_code: roomCode, Blocks: roomBlock});
         }else{
             return {"ERROR": "INVALID ROOM CODE"}
         }
@@ -40,20 +45,25 @@ async function getRooms(client, roomIds) {
 //roomId is in format {BUILDING_CODE}_{ROOM_CODE}
 //return blockmap obj for the room
 async function getRoom(client, roomId) {
-
+    
     const db = client.db('blockmap');
     const split = roomId.split("-");
     const buildingToFind = split[0];
     const roomCode = split[1];
     const collection = db.collection('buildings');
     const document = await collection.findOne({buildingCode: buildingToFind});
-
+    
+    const today = new Date();
+    let formattedDate = format(today, "yyyy-MM-dd");
+    
     if (document) {
         const room = await document.rooms.find(room => room.roomCode === roomId);
+        
         if (room) {
-            return {building_code: buildingToFind, room_code: roomCode, Blocks: room.blocks};
+            const roomBlock = formatExceptionDates(room,formattedDate);
+            return {building_code: buildingToFind, room_code: roomCode, Blocks: roomBlock};
         } else {
-            return {'ERROR': 'NO ROOM FOUND'}
+            return {"ERROR": "NO ROOM FOUND"}
         }
     } else {
         return {"ERROR": "BUILDING CODE DIDN'T MATCH"}
