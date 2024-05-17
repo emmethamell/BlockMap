@@ -45,8 +45,9 @@ app.get('/buildings', async(req, res) => {
     res.status(500).json({ error: 'An error occurred' })
   }
 });
+
 /**
- * @GET /BlockMap
+ * @POST /BlockMap
  * @description Batch get rooms from the BlockMap database based on query parameters
  * @query {string} roomIds - the group of rooms to get, formatted as building-room
  */
@@ -68,7 +69,6 @@ app.post('/rooms', async(req, res) => {
  */
 app.get('/room', async(req, res) => {
     const roomId = req.query.roomId;
-    console.log("ROOMID:", roomId)
     try {
       const room = await getRoom(client, roomId);
       res.json(room)
