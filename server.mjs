@@ -12,6 +12,7 @@ const uri = process.env.URI;
 
 app.use(express.json());
 app.use(cors()); 
+app.options('*', cors());
 
 const client = new MongoClient(uri, {
     serverApi: {
